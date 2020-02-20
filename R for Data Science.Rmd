@@ -1,0 +1,390 @@
+---
+title: "R for Data Science"
+output:
+  html_document:
+    df_print: paged
+  code_download: yes
+  html_notebook: default
+  pdf_document: default
+---
+
+## Preface
+
+Data science allows you to turn raw data into understanding, insight, and knowledge. The goal of this book is to learn the most important tools in R that will let you do data science. 
+
+---
+
+### Steps of a Data Science Project:
+1. Import: Importing involves loading a data frame in R by taking data stored in a file, database, or web API. 
+2. Tidy: Storing the data in a consisent form that matches  the semantics of the dataset with the way it is stored; each column is a variable, and each row is an observation. 
+3. Transform: This step involves narrowing in on observations of interest (ie. all people in one city, or all data from the last year), creating new variables (ie. computing velocity from speed and time), and calculating a set of summary statistics (ie. counts or means). Together, tidying and transforming are called wrangling. 
+4. Visualize: The goal of proper visualization is to show you things you did not expect, or raise new questions about the data. A good visualization might also indicate that you're asking the wrong question, or you need to collect different data. 
+5. Model: Models are fundamentally mathematical or computational tools that make assumptions and generally won't surprise you. Models and Visualizations help you understand the data. 
+6. Communicate: Explaining your results to others. 
+
+### How This Book Is Organized
+The book is organized first by visualization and transformation of data that's already been imported and tidied because data ingest and tidying is routine and boring as well as at times frustrating. This makes it a bad idea to begin learning first. 
+
+### What This Book Doesn't Cover
+This book focuses more on small, in-memory datasets because you can't tackle big data unless you have experience with small data. This book also focuses extensively on rectangular data: collections of values that are each associated with a variable and observation. Data that doesn't fit this paradigm would be: images, sounds, trees, and text. Data analysis can be divided into two camps: hypothesis generation and hypothesis confirmation. This book focuses on hypothesis generation or data exploration. It will allow you to look deeply at the data and use your subject knowledge to generate many interesting hypotheses to help explain why the data behaves the way it does. 
+
+### The Tidyverse
+An R package is a collection of functions, data, and documentation that extends the capabilities of base R. The majority of the packages that you will use in this book are part of the so-called tidyverse. 
+You can install the complete tidyverse with a single line of code:
+install.packages("tidyverse")
+
+You will not be able to use the functions, objects and help files untill you load it with library().
+Core of tidyverse: ggplot2, tibble, tidyr, readr, purrr, and dplyr. 
+
+### Running R Code
+In your console, you type after the >, called the prompt. The book does not show code with the prompt, instead output is commented out with #>. This makes it easy to copy code out of the book and into the console. 
+
+Conventions:
+  Functions are in a code font and followed by parentheses, like sum() or mean().
+  Other R objects (like data or function arguments) are in a code font, without parentheses like flights or x. 
+  If we want to make it clear what package an object comes from, we'll use the package name followed by two colons, like dplyr::mutate()   or nycflights13::flights. 
+
+### Getting Help and Learning More
+Start with Google. If Google doesn't help, try stackoverflow. Prepare a minimal reproducible example, or reprex, to make it easier for others to help you. 
+
+---
+
+## Part I: Explore
+The goal of the first part of the book is to get you up to speed with the basic tools of data exploration as quickly as possible. Data exploration is the art of looking at your data, rapidly generating hypotheses, quickly testing them, then repeating again and again and again. Again, this book will begin with teaching you visualization first because the payoff is clear: you make elegant and informative plots that help you understand the data. 
+
+---
+
+## Chapter 1: Data Visualization with ggplot2
+
+# Introduction
+ggplot2 implements the grammar of graphics, a coherent system for describing and building graphs. See "A Layered Grammar of Graphics."
+
+Load tidyverse by running code:
+library(tidyverse)
+
+If you get the error "there is no package called 'tidyverse,'" you need to first install it, then run library() again.
+install.packages("tidyverse")
+library(tidyverse)
+
+If you want to be specific about where a function (or dataset) comes from, you can use the special form package::function().
+
+# First Steps
+Question: Do cars with big engines use more fuel than cars with small engines?
+
+# The mpg Data Frame
+Data frame: rectangular collection of variables (in the columns) and observations (in the rows).  
+
+Getting help by using "?"
+```{r}
+library(tidyverse)
+?mpg
+```
+
+# Creating a ggplot
+
+```{r}
+library(tidyverse)
+# Load dataset
+# ggplot creates a coordinate system that you can add layers to
+# the first argument of ggplot() is the dataset to use in the graph.
+# ggplot() creates an empty graph
+ggplot(data = mpg) +
+# the function geom_point adds a layer of points to you plot, which creates a scatterplot
+# each geom function in ggplot2 takes a mapping argument 
+# the mapping argument defines how variables are mapped to visual properties
+# the mapping argument is always paried with aes(), and the x and y arguments of aes() specify which variables map to the x- and y-axes
+# ggplot looks for the mapped variable in the data argument, in this case, mpg
+  geom_point(mapping = aes(x = displ, y = hwy))
+```
+The plot shows a negative relationship between engine size (displ) and fuel efficiency (hwy). 
+
+# A Graphing Template
+
+ggplot(data = <DATA>) + 
+  <GEOM_FUNCTION>(mapping = aes(<MAPPINGS))
+  
+# Exercises
+1. Run ggplot(data = mpg). What do you see?
+```{r}
+ggplot(data = mpg)
+```
+Empty graph.
+
+2. How many rows are in mtcars? How many columns?
+```{r}
+data = mtcars
+nrow(mtcars)
+ncol(mtcars)
+glimpse(mtcars)
+```
+32 rows and 11 columns
+
+3. What does the drv variable describe? Read the help for ?mpg to find out.
+```{r}
+?mpg
+```
+drv describes whether the car is front-wheel drive (f), rear-wheel drive (r), or 4-wheel drive (4).
+
+4. Make a scatterplot of hwy versus cyl.
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(hwy, cyl))
+# Second Way
+ggplot(mpg, aes(x = hwy, y = cyl)) +
+  geom_point()
+```
+5. What happens if you make a scatterplot of class versus drv? Why is the plot not useful?
+
+```{r}
+ggplot(mpg, aes(x = class, y = drv)) +
+  geom_point()
+
+count(mpg, drv, class)
+```
+The scatterplot only has a few data points. When plotting two categorical variables the only data points that will show up are ones that can display both values. For example, the first variable, 2seater, only has rear wheel drive. This results in only one point being plotted. Scatterplots work best when plotting a continuous x and a continous y, and when all (x,y) values are unique.
+
+Correct code for plotting two categorical variables covered in section 7.5.2. This code uses geom_count(), which is similar to a scatterplot but uses the size of the points to show the number of observations at an (x,y) point. 
+
+```{r}
+ggplot(mpg, aes(x = class, y = drv)) +
+  geom_count()
+```
+geom_tile() can also be used which uses a color scale to show the number of observations with each (x,y) value. The missing tiles represent missing observations.
+```{r}
+mpg %>%
+  count(class, drv) %>%
+  ggplot(aes(x = class, y = drv)) +
+  geom_tile(mapping = aes(fill = n))
+```
+
+
+# Aesthetic Mappings
+Quote:
+The greatest value of a picture is when it forces us to notice what we never expected to see.
+  - John Tukey
+
+You can add a third variable to a plot by matching it to an aesthetic. An aethetic is a visual property of the objects in your plot. You can also map the colors of your points to the class variable to reveal the class of each car. 
+
+Back to dataset
+```{r}
+library(tidyverse)
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+```
+Question: Why are there cars with large engines with low highway mpg?
+Hypothesis: Cars could be hybrids.
+
+To map an aesthetic to a variable, associate the name of the aesthetic to the name of the variable inside aes().
+ggplot2 will automatically assign a new aesthetic (unique colors) to each unique value of the variable, a process known as scaling. ggplot2 will also add a legend that explains which levels correspond to which values. 
+
+```{r}
+library(tidyverse)
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = class))
+```
+Question: Why are there cars with large engines with low highway mpg?
+Answer: Cars are 2seaters or sportscars.The cars were unlikely to be hybrids since they have large engines.
+
+In the last example, we matched class to a color aesthetic, but we could have mapped it to a size aesthetic in the same way. 
+We get a warning here because mapping an unordered variable(class) to an ordered aesthetic (size) is not a good idea.
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, size = class))
+```
+
+Another option is to map class to the alpha aesthetic, which controls the transparency of the points, or the shape of the points.
+
+```{r}
+# Alpha Aesthetic
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, alpha = class))
+# Shape Aesthetic
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, shape = class))
+```
+
+You can also set the aesthetic properties of your geom manually. 
+```{r}
+# Blue Color Aesthetic
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
+```
+# Exercises 
+1. What's gone wrong with this code? Why are the points not blue? 
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
+```
+color = "blue" should not tied to aesthetic mapping. The correct code is shown below:
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), color = "blue")
+```
+
+2. Which variables in mpg are categorical? Which variables are continuous? (Hint: type ?mpg to read the documentation for the dataset.) How can you see this information when you run mpg?
+```{r}
+?mpg
+head(mpg, 1)
+glimpse(mpg)
+```
+Categorical variables: manufacturer, model, year, trans, drv, fl, class
+Continuous variables: displ, cyl, cty, hwy
+<chr> indicates categorical
+<dbl> or <int> indicate continuous
+
+3. Map a continuous variable to color, size, and shape. How do these aesthetics behave differently for categorical versus continuous variables? 
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = displ))
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, size = displ))
+# Error
+#ggplot(data = mpg) + 
+  #geom_point(mapping = aes(x = displ, y = hwy, shape = displ))
+```
+When a continuous value is mapped to shape, it gives an error. Though we could split a continuous variable into discrete categories and use a shape aesthetic. Though we could split a continuous variable into discrete categories and use a shape aesthetic, this would conceptually not make sense. A numeric variable has an order, but shapes do not. It is clear that smaller points correspond to smaller values, or once the color scale is given, which colors correspond to larger or smaller values. But it is not clear whether a square is greater or less than a circle. 
+
+4. What happens if you map the same variable to multiple aesthetics?
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = class, shape = class))
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = class, size = class))
+ggplot(mpg, aes(x = displ, y = hwy, color = hwy, size = displ)) +
+  geom_point()
+```
+Mapping a single variable to multiple aesthetics is redundant. Because it is redundant information, in most cases avoid mapping a single variable to multiple aesthetics. 
+
+5. What does the stroke aesthetic do? What shapes does it work with? (Hint: use ?geom_point.)
+
+```{r}
+?geom_point
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, stroke = displ))
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_point(shape = 21, color = "black", fill = "white", size = 5, stroke = 5)
+```
+Stroke changes the size of the border for shapes (21-25). These are filled shapes in which the color and size of the border can differ from that of the filled interior of the shape. 
+
+6. What happens if you map an aesthetic to something other than a variable name, like aes(color = displ < 5)?
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = displ < 5)) +
+  geom_point()
+```
+Aesthetics can also be mapped to expressions like displ < 5. The ggplot() functino behaves as if a temporary variable was added to the data with values equal to the result of the expression. In this case, the result of displ < 5 is a logical variable which takes values of TRUE or FALSE. This also explains why, in Exercise 3.3.1, the expression color = "blue" created a categorical variable with only one category: "blue". 
+
+# Facets 
+
+To facet your plot by a single variable, use facet_wrap()
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class, nrow = 2)
+```
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_grid(drv ~ cyl)
+```
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_grid(. ~ cyl)
+```
+
+
+# Exercises
+
+1. What happens if you facet on a continuous variable? 
+Continuous variables are tougher to facet because they require more subsets. 
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ cty, nrow = 2)
+```
+2. What do the empty cells in a plot with facet_grid(drv ~ cyl) mean? How do they relate to this plot?
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = drv, y = cyl))
+```
+The two plots are somewhat similar as they both show that there are no cars where drv = 4 and cyl = 5. 
+
+3. What plots does the following code make? What does . do? 
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(drv ~ .)
+```
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(. ~ cyl)
+```
+
+
+
+4. Take the first faceted plot in this section:
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class, nrow = 2)
+```
+What are the advantages to using faceting instead of the color aesthetic? What are the disadvantages? How might the balance change if you had a larger dataset? 
+
+5. Read ?facet_wrap. What does nrow do? What does ncol do? What other options control the layout of the individual panels? 
+```{r}
+?facet_wrap
+```
+nrow selects the number of rows the subplots will be viewed in. ncol does the same with columns. For example, if there are 6 subplots you can chose to view these by either 3x2 or 2x3. 
+
+
+6. When using facet_grid() you should usually put the variable with more unique levels in the columns. Why? 
+
+
+# Geometric Objects
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy))
+
+ggplot(data = mpg) +
+  geom_smooth(mapping = aes(x = displ, y = hwy))
+```
+
+
+```{r}
+ggplot(data = mpg) + 
+  geom_smooth(mapping = aes(x = displ, y = hwy, linetype = drv))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
